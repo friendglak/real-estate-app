@@ -145,7 +145,7 @@ namespace RealEstate.Tests.Controllers
             var createdPropertyDto = TestDataBuilder.CreateValidPropertyDto("new-id");
             var validationResult = new ValidationResult();
 
-            _mockValidator.Setup(x => x.ValidateAsync(propertyDto))
+            _mockValidator.Setup(x => x.ValidateAsync(propertyDto, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(validationResult);
             _mockService.Setup(x => x.CreateAsync(propertyDto))
                 .ReturnsAsync(createdPropertyDto);
@@ -159,7 +159,7 @@ namespace RealEstate.Tests.Controllers
             createdAtResult!.ActionName.Should().Be(nameof(PropertiesController.GetById));
             createdAtResult.RouteValues!["id"].Should().Be(createdPropertyDto.Id);
             createdAtResult.Value.Should().BeEquivalentTo(createdPropertyDto);
-            _mockValidator.Verify(x => x.ValidateAsync(propertyDto), Times.Once);
+            _mockValidator.Verify(x => x.ValidateAsync(propertyDto, It.IsAny<CancellationToken>()), Times.Once);
             _mockService.Verify(x => x.CreateAsync(propertyDto), Times.Once);
         }
 
@@ -172,7 +172,7 @@ namespace RealEstate.Tests.Controllers
             validationResult.Errors.Add(new ValidationFailure("Name", "Name is required"));
             validationResult.Errors.Add(new ValidationFailure("PriceProperty", "Price must be positive"));
 
-            _mockValidator.Setup(x => x.ValidateAsync(propertyDto))
+            _mockValidator.Setup(x => x.ValidateAsync(propertyDto, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(validationResult);
 
             // Act
@@ -192,7 +192,7 @@ namespace RealEstate.Tests.Controllers
             var propertyDto = TestDataBuilder.CreateValidPropertyDto();
             var validationResult = new ValidationResult();
 
-            _mockValidator.Setup(x => x.ValidateAsync(propertyDto))
+            _mockValidator.Setup(x => x.ValidateAsync(propertyDto, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(validationResult);
             _mockService.Setup(x => x.CreateAsync(propertyDto))
                 .ThrowsAsync(new Exception("Service error"));
@@ -216,7 +216,7 @@ namespace RealEstate.Tests.Controllers
             var updatedPropertyDto = TestDataBuilder.CreateValidPropertyDto(propertyId);
             var validationResult = new ValidationResult();
 
-            _mockValidator.Setup(x => x.ValidateAsync(propertyDto))
+            _mockValidator.Setup(x => x.ValidateAsync(propertyDto, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(validationResult);
             _mockService.Setup(x => x.UpdateAsync(propertyId, propertyDto))
                 .ReturnsAsync(updatedPropertyDto);
@@ -256,7 +256,7 @@ namespace RealEstate.Tests.Controllers
             var propertyDto = TestDataBuilder.CreateValidPropertyDto();
             var validationResult = new ValidationResult();
 
-            _mockValidator.Setup(x => x.ValidateAsync(propertyDto))
+            _mockValidator.Setup(x => x.ValidateAsync(propertyDto, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(validationResult);
             _mockService.Setup(x => x.UpdateAsync(propertyId, propertyDto))
                 .ReturnsAsync((PropertyDto?)null);
