@@ -2,7 +2,7 @@
 
 import { Header } from "@/components/header";
 import { FilterSidebar } from "@/components/filter-sidebar";
-import { PropertiesContainer } from "@/components/properties-container";
+import { PropertiesContainerWithSuspense } from "@/components/properties-container-with-suspense";
 import { useSidebarFilters } from "@/hooks/use-sidebar-filters";
 
 export default function HomePage() {
@@ -36,7 +36,7 @@ export default function HomePage() {
 
           {/* Main Content Area */}
           <div className="lg:col-span-3">
-            <PropertiesContainer />
+            <PropertiesContainerWithSuspense />
           </div>
         </div>
       </main>
