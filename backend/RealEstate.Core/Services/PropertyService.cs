@@ -47,9 +47,10 @@ namespace RealEstate.Application.Services
 
                 var result = await _repository.GetFilteredAsync(filter);
 
+                var mappedItems = _mapper.Map<List<PropertyListDto>>(result.Items);
                 return new PaginatedResultDto<PropertyListDto>
                 {
-                    Items = _mapper.Map<List<PropertyListDto>>(result.Items),
+                    Items = mappedItems,
                     PageNumber = result.PageNumber,
                     PageSize = result.PageSize,
                     TotalCount = result.TotalCount

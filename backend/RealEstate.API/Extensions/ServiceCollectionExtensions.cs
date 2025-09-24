@@ -69,9 +69,10 @@ public static class ServiceCollectionExtensions
 
             options.AddPolicy("Development", policy =>
             {
-                policy.AllowAnyOrigin()
+                policy.WithOrigins("http://localhost:3000", "https://localhost:3000")
                       .AllowAnyMethod()
-                      .AllowAnyHeader();
+                      .AllowAnyHeader()
+                      .AllowCredentials();
             });
         });
 

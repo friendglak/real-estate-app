@@ -2,6 +2,9 @@ using RealEstate.API.Extensions;
 using RealEstate.API.Middleware;
 using RealEstate.Infrastructure.SeedData;
 using Serilog;
+using DotNetEnv;
+
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 

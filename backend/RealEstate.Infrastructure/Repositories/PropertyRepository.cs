@@ -91,6 +91,8 @@ namespace RealEstate.Infrastructure.Repositories
                     .Limit(filter.PageSize)
                     .ToListAsync();
 
+                _logger.LogInformation("Retrieved {Count} properties from database", properties.Count);
+
                 return new PaginatedResultDto<Property>
                 {
                     Items = properties,

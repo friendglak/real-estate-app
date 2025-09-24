@@ -17,7 +17,6 @@ namespace RealEstate.Infrastructure.Context
             var client = new MongoClient(_settings.ConnectionString);
             _database = client.GetDatabase(_settings.DatabaseName);
 
-            // Ensure indexes are created
             CreateIndexes();
         }
 
@@ -29,34 +28,49 @@ namespace RealEstate.Infrastructure.Context
 
         private void CreateIndexes()
         {
-            // Create indexes for better query performance
-            var propertyIndexKeys = Builders<Property>.IndexKeys;
-            var propertyIndexModels = new[]
+            try
             {
-                new CreateIndexModel<Property>(propertyIndexKeys.Text(x => x.Name)),
-                new CreateIndexModel<Property>(propertyIndexKeys.Text(x => x.AddressProperty)),
-                new CreateIndexModel<Property>(propertyIndexKeys.Ascending(x => x.PriceProperty)),
-                new CreateIndexModel<Property>(propertyIndexKeys.Ascending(x => x.PropertyType)),
-                new CreateIndexModel<Property>(propertyIndexKeys.Ascending(x => x.IsAvailable)),
-                new CreateIndexModel<Property>(propertyIndexKeys.Ascending(x => x.IdOwner)),
-                new CreateIndexModel<Property>(
-                    propertyIndexKeys.Combine(
-                        propertyIndexKeys.Text(x => x.Name),
-                        propertyIndexKeys.Text(x => x.AddressProperty)
+                // Create indexes for better query performance
+                var propertyIndexKeys = Builders<Property>.IndexKeys;
+                var propertyIndexModels = new[]
+                {
+                    // Single text index that covers both Name and AddressProperty
+                    new CreateIndexModel<Property>(
+                        propertyIndexKeys.Combine(
+                            propertyIndexKeys.Text(x => x.Name),
+                            propertyIndexKeys.Text(x => x.AddressProperty)
+                        ),
+                        new CreateIndexOptions { Name = "text_search_index" }
                     ),
-                    new CreateIndexOptions { Name = "text_search_index" }
-                )
-            };
+                    new CreateIndexModel<Property>(propertyIndexKeys.Ascending(x => x.PriceProperty)),
+                    new CreateIndexModel<Property>(propertyIndexKeys.Ascending(x => x.PropertyType)),
+                    new CreateIndexModel<Property>(propertyIndexKeys.Ascending(x => x.IsAvailable)),
+                    new CreateIndexModel<Property>(propertyIndexKeys.Ascending(x => x.IdOwner))
+                };
 
-            Properties.Indexes.CreateMany(propertyIndexModels);
+                Properties.Indexes.CreateMany(propertyIndexModels);
+            }
+            catch (Exception ex)
+            {
+                // Log the error but don't fail the application startup
+                Console.WriteLine($"Warning: Could not create some indexes: {ex.Message}");
+            }
 
-            var ownerIndexKeys = Builders<Owner>.IndexKeys;
-            var ownerIndexModel = new CreateIndexModel<Owner>(
-                ownerIndexKeys.Ascending(x => x.Email),
-                new CreateIndexOptions { Unique = true }
-            );
+            try
+            {
+                var ownerIndexKeys = Builders<Owner>.IndexKeys;
+                var ownerIndexModel = new CreateIndexModel<Owner>(
+                    ownerIndexKeys.Ascending(x => x.Email),
+                    new CreateIndexOptions { Unique = true }
+                );
 
-            Owners.Indexes.CreateOne(ownerIndexModel);
+                Owners.Indexes.CreateOne(ownerIndexModel);
+            }
+            catch (Exception ex)
+            {
+                // Log the error but don't fail the application startup
+                Console.WriteLine($"Warning: Could not create owner indexes: {ex.Message}");
+            }
         }
     }
 }
