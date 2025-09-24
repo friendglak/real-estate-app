@@ -1,15 +1,14 @@
 'use client'
 
-import React, { useEffect, useState, useCallback, useMemo } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import Image from 'next/image'
 import { X, MapPin, DollarSign, User, Phone, Heart, Share2 } from 'lucide-react'
-import { PropertyDto, ApiError } from '@/types/property'
-import { apiService } from '@/services/api-service'
+import { PropertyDto } from '@/types/property'
+import { usePropertyQuery } from '@/hooks/queries/property-queries'
 import { formatCurrency } from '@/utils/formatters'
 import { LoadingSpinner } from './loading-spinner'
 import { ErrorDisplay } from './ui/error-display'
 import { Button } from './ui/button'
-import { useAsyncError } from '@/hooks/use-error-boundary'
 
 interface PropertyDetailModalProps {
   isOpen: boolean
@@ -24,56 +23,18 @@ export function PropertyDetailModal({
   propertyId,
   property: initialProperty
 }: PropertyDetailModalProps) {
-  const [property, setProperty] = useState<PropertyDto | null>(initialProperty || null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [isFavorite, setIsFavorite] = useState(false)
 
-  const { handleAsyncError } = useAsyncError()
+  // Use React Query to fetch property details
+  const {
+    data: propertyData,
+    isLoading: loading,
+    error: queryError,
+  } = usePropertyQuery(propertyId || '', isOpen && !initialProperty)
 
-  // Memoize property data to prevent unnecessary re-renders
-  const propertyData = useMemo(() => property, [property])
-
-  // Fetch property details with proper error handling
-  const fetchPropertyDetails = useCallback(async (id: string) => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const response = await apiService.getPropertyById(id)
-
-      if (response.success && response.data) {
-        setProperty(response.data)
-      } else {
-        setError(response.message || 'Failed to load property details')
-      }
-    } catch (err) {
-      const apiError = err as ApiError
-      const errorMessage = apiError.message || 'Failed to fetch property details'
-      setError(errorMessage)
-      handleAsyncError(err)
-    } finally {
-      setLoading(false)
-    }
-  }, [handleAsyncError])
-
-  // Handle modal state changes
-  useEffect(() => {
-    if (!isOpen) {
-      setProperty(initialProperty || null)
-      setError(null)
-      return
-    }
-
-    if (initialProperty) {
-      setProperty(initialProperty)
-      return
-    }
-
-    if (propertyId && !initialProperty) {
-      fetchPropertyDetails(propertyId)
-    }
-  }, [isOpen, propertyId, initialProperty, fetchPropertyDetails])
+  // Use initial property if provided, otherwise use fetched data
+  const property = initialProperty || propertyData
+  const error = queryError?.message || null
 
   // Handle backdrop click
   const handleBackdropClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -140,9 +101,9 @@ export function PropertyDetailModal({
       aria-modal="true"
       aria-labelledby="property-title"
     >
-      <div className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-lg shadow-xl overflow-hidden animate-slide-up">
+      <div className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-lg shadow-xl overflow-hidden animate-slide-up flex flex-col">
         {/* Header */}
-        <div className="relative">
+        <div className="relative flex-shrink-0">
           {/* Close Button */}
           <Button
             onClick={onClose}
@@ -155,11 +116,11 @@ export function PropertyDetailModal({
           </Button>
 
           {/* Property Image */}
-          {propertyData?.image && (
+          {property?.imageUrl && (
             <div className="relative h-64 md:h-80 w-full">
               <Image
-                src={propertyData.image}
-                alt={propertyData.name}
+                src={property.imageUrl}
+                alt={property.name}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 80vw"
@@ -171,7 +132,7 @@ export function PropertyDetailModal({
                 <div className="flex items-center gap-2">
                   <DollarSign size={18} />
                   <span className="text-lg font-semibold">
-                    {formatCurrency(propertyData.priceProperty)}
+                    {formatCurrency(property.priceProperty)}
                   </span>
                 </div>
               </div>
@@ -180,7 +141,7 @@ export function PropertyDetailModal({
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto max-h-[90vh]">
+        <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center h-64">
               <LoadingSpinner size={32} text="Loading property details..." />
@@ -190,7 +151,7 @@ export function PropertyDetailModal({
               <ErrorDisplay
                 title="Error Loading Property"
                 message={error}
-                onDismiss={() => setError(null)}
+                onDismiss={onClose}
               />
               <div className="mt-4 text-center">
                 <Button onClick={onClose} variant="secondary">
@@ -198,7 +159,7 @@ export function PropertyDetailModal({
                 </Button>
               </div>
             </div>
-          ) : propertyData ? (
+          ) : property ? (
             <div className="p-6">
               {/* Property Header */}
               <div className="mb-6">
@@ -207,7 +168,7 @@ export function PropertyDetailModal({
                     id="property-title"
                     className="text-3xl font-bold text-slate-900 flex-1"
                   >
-                    {propertyData.name}
+                    {property.name}
                   </h1>
 
                   {/* Action Buttons */}
@@ -238,12 +199,12 @@ export function PropertyDetailModal({
 
                 <div className="flex items-start gap-2 text-slate-600 mb-4">
                   <MapPin size={20} className="mt-1 flex-shrink-0" />
-                  <p className="text-lg">{propertyData.addressProperty}</p>
+                  <p className="text-lg">{property.addressProperty}</p>
                 </div>
 
                 <div className="flex items-center gap-2 text-slate-600 mb-6">
                   <User size={20} />
-                  <span>Owner ID: {propertyData.idOwner}</span>
+                  <span>Owner ID: {property.idOwner}</span>
                 </div>
               </div>
 
@@ -251,7 +212,7 @@ export function PropertyDetailModal({
               <div className="bg-blue-50 rounded-lg p-6 mb-6">
                 <h2 className="text-xl font-semibold text-slate-900 mb-2">Price</h2>
                 <div className="text-3xl font-bold text-blue-600">
-                  {formatCurrency(propertyData.priceProperty)}
+                  {formatCurrency(property.priceProperty)}
                 </div>
               </div>
 
@@ -260,14 +221,14 @@ export function PropertyDetailModal({
                 <div className="bg-slate-50 rounded-lg p-4">
                   <h3 className="font-semibold text-slate-900 mb-2">Property Details</h3>
                   <div className="space-y-2 text-slate-700">
-                    <p><span className="font-medium">Name:</span> {propertyData.name}</p>
+                    <p><span className="font-medium">Name:</span> {property.name}</p>
                   </div>
                 </div>
 
                 <div className="bg-slate-50 rounded-lg p-4">
                   <h3 className="font-semibold text-slate-900 mb-2">Owner Information</h3>
                   <div className="space-y-2 text-slate-700">
-                    <p><span className="font-medium">Owner ID:</span> {propertyData.idOwner}</p>
+                    <p><span className="font-medium">Owner ID:</span> {property.idOwner}</p>
                     {/* TODO: Add actual owner details when available */}
                   </div>
                 </div>
@@ -276,7 +237,7 @@ export function PropertyDetailModal({
               {/* Address Section */}
               <div className="bg-slate-50 rounded-lg p-4 mb-6">
                 <h3 className="font-semibold text-slate-900 mb-2">Full Address</h3>
-                <p className="text-slate-700">{propertyData.addressProperty}</p>
+                <p className="text-slate-700">{property.addressProperty}</p>
               </div>
 
               {/* Action Buttons */}

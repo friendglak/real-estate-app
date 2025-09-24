@@ -59,7 +59,7 @@ export function PropertyModal({ isOpen, onClose, property }: PropertyModalProps)
           {/* Property Image */}
           <div className="relative h-64 md:h-80 w-full">
             <Image
-              src={property.image || '/placeholder-property.jpg'}
+              src={property.imageUrl || '/placeholder-property.svg'}
               alt={property.name}
               fill
               className="object-cover"

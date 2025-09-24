@@ -1,9 +1,18 @@
 export interface PropertyDto {
+  id: string;
   idOwner: string;
   name: string;
   addressProperty: string;
   priceProperty: number;
-  image: string;
+  imageUrl: string;
+  description?: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  squareMeters?: number;
+  propertyType: number;
+  isAvailable: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PropertyFilters {
@@ -13,20 +22,14 @@ export interface PropertyFilters {
   maxPrice?: number;
 }
 
-export interface PropertyDetailResponse {
-  success: boolean;
-  data: PropertyDto;
-  message: string;
-}
-
 export interface PropertyListResponse {
-  success: boolean;
-  data: PropertyDto[];
-  message: string;
-  totalCount: number;
+  items: PropertyDto[];
   pageNumber: number;
   pageSize: number;
+  totalCount: number;
   totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
 }
 
 export interface ApiError {

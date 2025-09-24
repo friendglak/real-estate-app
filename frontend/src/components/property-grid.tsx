@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { PropertyCard } from '@/components/property-card'
-import { PropertyModal } from '@/components/property-modal'
+import { PropertyDetailModal } from '@/components/property-detail-modal'
 import { Pagination } from '@/components/pagination'
 import type { PropertyDto } from '@/types/property'
 
@@ -19,17 +19,17 @@ export function PropertyGrid({
   currentPage,
   totalCount
 }: PropertyGridProps) {
-  const [selectedProperty, setSelectedProperty] = useState<PropertyDto | null>(null)
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const handlePropertyClick = (property: PropertyDto) => {
-    setSelectedProperty(property)
+    setSelectedPropertyId(property.id)
     setIsModalOpen(true)
   }
 
   const handleCloseModal = () => {
     setIsModalOpen(false)
-    setSelectedProperty(null)
+    setSelectedPropertyId(null)
   }
 
   return (
@@ -46,7 +46,7 @@ export function PropertyGrid({
       <div className="properties-grid">
         {properties.map((property) => (
           <PropertyCard
-            key={property.idOwner}
+            key={property.id}
             property={property}
             onClick={handlePropertyClick}
           />
@@ -61,10 +61,10 @@ export function PropertyGrid({
       />
 
       {/* Property detail modal */}
-      <PropertyModal
+      <PropertyDetailModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        property={selectedProperty}
+        propertyId={selectedPropertyId || undefined}
       />
     </div>
   )

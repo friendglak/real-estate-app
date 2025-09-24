@@ -1,9 +1,9 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 import type {
   PropertyListResponse,
-  PropertyDetailResponse,
   SearchParams,
   ApiError,
+  PropertyDto,
 } from "@/types/property";
 
 class ApiService {
@@ -11,8 +11,8 @@ class ApiService {
 
   constructor() {
     this.api = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
-      timeout: 30000,
+      baseURL: "http://localhost:5000/",
+      timeout: 10000,
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
@@ -24,6 +24,7 @@ class ApiService {
       (config) => {
         if (process.env.NODE_ENV === "development") {
           console.log(`Making request to: ${config.url}`);
+          console.log(`Full URL: ${config.baseURL}${config.url}`);
         }
         return config;
       },
@@ -36,6 +37,9 @@ class ApiService {
     // Response interceptor
     this.api.interceptors.response.use(
       (response: AxiosResponse) => {
+        if (process.env.NODE_ENV === "development") {
+          console.log(`Response received:`, response.status, response.data);
+        }
         return response;
       },
       (error) => {
@@ -88,10 +92,12 @@ class ApiService {
   // Get all properties with filters and pagination
   async getProperties(params?: SearchParams): Promise<PropertyListResponse> {
     try {
-      const response = await this.api.get<PropertyListResponse>("/properties", {
-        params: this.cleanParams(params),
-      });
-
+      const response = await this.api.get<PropertyListResponse>(
+        "api/properties",
+        {
+          params: this.cleanParams(params),
+        }
+      );
       return response.data;
     } catch (error) {
       console.error("Error fetching properties:", error);
@@ -100,11 +106,9 @@ class ApiService {
   }
 
   // Get property by ID
-  async getPropertyById(id: string): Promise<PropertyDetailResponse> {
+  async getPropertyById(id: string): Promise<PropertyDto> {
     try {
-      const response = await this.api.get<PropertyDetailResponse>(
-        `/properties/${id}`
-      );
+      const response = await this.api.get<PropertyDto>(`api/properties/${id}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching property ${id}:`, error);
@@ -115,10 +119,53 @@ class ApiService {
   // Health check endpoint
   async healthCheck(): Promise<{ status: string; timestamp: string }> {
     try {
-      const response = await this.api.get("/health");
+      const response = await this.api.get("api/health");
       return response.data;
     } catch (error) {
       console.error("Health check failed:", error);
+      throw error;
+    }
+  }
+
+  // Create property
+  async createProperty(
+    property: Omit<PropertyDto, "id">
+  ): Promise<PropertyDto> {
+    try {
+      const response = await this.api.post<PropertyDto>(
+        "api/properties",
+        property
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error creating property:", error);
+      throw error;
+    }
+  }
+
+  // Update property
+  async updateProperty(
+    id: string,
+    property: Partial<PropertyDto>
+  ): Promise<PropertyDto> {
+    try {
+      const response = await this.api.put<PropertyDto>(
+        `api/properties/${id}`,
+        property
+      );
+      return response.data;
+    } catch (error) {
+      console.error(`Error updating property ${id}:`, error);
+      throw error;
+    }
+  }
+
+  // Delete property
+  async deleteProperty(id: string): Promise<void> {
+    try {
+      await this.api.delete(`api/properties/${id}`);
+    } catch (error) {
+      console.error(`Error deleting property ${id}:`, error);
       throw error;
     }
   }

@@ -37,7 +37,7 @@ function PropertyCardComponent({ property, onClick }: PropertyCardProps) {
       {/* Property Image */}
       <div className="relative aspect-property overflow-hidden">
         <Image
-          src={imageError ? '/placeholder-property.jpg' : property.image || '/placeholder-property.jpg'}
+          src={imageError ? '/placeholder-property.svg' : property.imageUrl || '/placeholder-property.svg'}
           alt={property.name}
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-105"

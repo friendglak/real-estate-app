@@ -1,6 +1,7 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
+import { useMemo } from 'react'
 import { PropertyGrid } from '@/components/property-grid'
 import { useProperties } from '@/hooks/use-properties'
 import { LoadingSpinner } from '@/components/loading-spinner'
@@ -11,15 +12,15 @@ import { Home, Search } from 'lucide-react'
 export function PropertyGridWrapper() {
   const searchParams = useSearchParams()
 
-  // Build search parameters from URL
-  const searchOptions = {
+  // Build search parameters from URL - memoized to prevent infinite re-renders
+  const searchOptions = useMemo(() => ({
     name: searchParams.get('name') || undefined,
     address: searchParams.get('address') || undefined,
     minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
     maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
     pageNumber: searchParams.get('page') ? Number(searchParams.get('page')) : 1,
     pageSize: 12,
-  }
+  }), [searchParams])
 
   const {
     properties,
