@@ -21,7 +21,7 @@ export function ErrorFallback({
   const defaultActions = (
     <div className="flex flex-col sm:flex-row gap-3">
       {resetError && (
-        <Button onClick={resetError} variant="primary">
+        <Button onClick={resetError} variant="default">
           <RefreshCw size={16} />
           Try Again
         </Button>

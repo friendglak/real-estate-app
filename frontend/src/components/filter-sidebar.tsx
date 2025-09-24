@@ -1,6 +1,5 @@
 import { Slider } from "./ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { useSidebarFilters } from "@/hooks/use-sidebar-filters";
 
 interface FilterSidebarProps {
   filters: {

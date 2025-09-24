@@ -28,8 +28,6 @@ export function PropertyFiltersForm({
   isLoading = false,
   initialFilters = {}
 }: PropertyFiltersFormProps) {
-  const [isExpanded, setIsExpanded] = useState(false)
-
   const { control, handleSubmit, watch, reset } = useForm<FilterFormData>({
     defaultValues: {
       name: initialFilters.name || '',
