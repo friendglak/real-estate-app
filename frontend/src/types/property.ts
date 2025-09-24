@@ -20,6 +20,8 @@ export interface PropertyFilters {
   address?: string;
   minPrice?: number;
   maxPrice?: number;
+  propertyType?: string;
+  bedrooms?: number;
 }
 
 export interface PropertyListResponse {

@@ -16,7 +16,7 @@ export function Footer() {
               <span className="text-xl font-bold">RealEstate</span>
             </Link>
             <p className="text-slate-300 mb-4 max-w-md">
-              Find your perfect property with our comprehensive real estate platform. 
+              Find your perfect property with our comprehensive real estate platform.
               Browse thousands of listings and connect with trusted agents.
             </p>
             <div className="flex space-x-4">

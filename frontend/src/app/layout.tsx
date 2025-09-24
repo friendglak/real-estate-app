@@ -1,7 +1,6 @@
 import { Inter } from 'next/font/google'
 import './globals.css'
 import type { Metadata } from 'next'
-import { ErrorBoundary } from '@/components/error-boundary'
 import { QueryProvider } from '@/providers/query-provider'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -45,9 +44,7 @@ export default function RootLayout({
         suppressHydrationWarning={true}
       >
         <QueryProvider>
-          <ErrorBoundary>
-            {children}
-          </ErrorBoundary>
+          {children}
         </QueryProvider>
       </body>
     </html>

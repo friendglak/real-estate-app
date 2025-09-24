@@ -1,10 +1,13 @@
 'use client'
 
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useCallback } from 'react'
 import Image from 'next/image'
-import { X, MapPin, DollarSign, User, Phone, Heart, Share2 } from 'lucide-react'
+import { X, MapPin, User, Phone, Heart, Share2 } from 'lucide-react'
 import { PropertyDto } from '@/types/property'
 import { usePropertyQuery } from '@/hooks/queries/property-queries'
+import { useFavorites } from '@/hooks/use-favorites'
+import { useScrollLock } from '@/hooks/use-scroll-lock'
+import { useContact } from '@/hooks/use-contact'
 import { formatCurrency } from '@/utils/formatters'
 import { LoadingSpinner } from './loading-spinner'
 import { ErrorDisplay } from './ui/error-display'
@@ -23,7 +26,8 @@ export function PropertyDetailModal({
   propertyId,
   property: initialProperty
 }: PropertyDetailModalProps) {
-  const [isFavorite, setIsFavorite] = useState(false)
+  const { isFavorited, toggleFavorite } = useFavorites()
+  const { openContactForm } = useContact()
 
   // Use React Query to fetch property details
   const {
@@ -52,9 +56,10 @@ export function PropertyDetailModal({
 
   // Handle favorite toggle
   const handleToggleFavorite = useCallback(() => {
-    setIsFavorite(prev => !prev)
-    // TODO: Implement favorite API call
-  }, [])
+    if (property) {
+      toggleFavorite(property.id)
+    }
+  }, [property, toggleFavorite])
 
   // Handle share functionality
   const handleShare = useCallback(async () => {
@@ -74,20 +79,22 @@ export function PropertyDetailModal({
 
   // Handle contact actions
   const handleContactOwner = useCallback(() => {
-    // TODO: Implement contact functionality
-    alert('Contact functionality would be implemented here')
-  }, [])
+    if (property) {
+      openContactForm(property.idOwner, property.name)
+    }
+  }, [property, openContactForm])
 
   // Handle body scroll lock
+  useScrollLock(isOpen)
+
+  // Handle escape key
   useEffect(() => {
     if (isOpen) {
       document.addEventListener('keydown', handleEscapeKey)
-      document.body.style.overflow = 'hidden'
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscapeKey)
-      document.body.style.overflow = 'unset'
     }
   }, [isOpen, handleEscapeKey])
 
@@ -101,7 +108,7 @@ export function PropertyDetailModal({
       aria-modal="true"
       aria-labelledby="property-title"
     >
-      <div className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-lg shadow-xl overflow-hidden animate-slide-up flex flex-col">
+      <div className="relative w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-xl overflow-hidden animate-slide-up flex flex-col">
         {/* Header */}
         <div className="relative flex-shrink-0">
           {/* Close Button */}
@@ -130,7 +137,6 @@ export function PropertyDetailModal({
               {/* Price Overlay */}
               <div className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-2 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <DollarSign size={18} />
                   <span className="text-lg font-semibold">
                     {formatCurrency(property.priceProperty)}
                   </span>
@@ -177,12 +183,12 @@ export function PropertyDetailModal({
                       onClick={handleToggleFavorite}
                       variant="ghost"
                       size="sm"
-                      className={isFavorite ? 'text-red-500' : 'text-slate-500'}
-                      aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                      className={property && isFavorited(property.id) ? 'text-red-500' : 'text-slate-500'}
+                      aria-label={property && isFavorited(property.id) ? 'Remove from favorites' : 'Add to favorites'}
                     >
                       <Heart
                         size={20}
-                        className={isFavorite ? 'fill-current' : ''}
+                        className={property && isFavorited(property.id) ? 'fill-current' : ''}
                       />
                     </Button>
 
@@ -209,67 +215,60 @@ export function PropertyDetailModal({
               </div>
 
               {/* Price Section */}
-              <div className="bg-blue-50 rounded-lg p-6 mb-6">
-                <h2 className="text-xl font-semibold text-slate-900 mb-2">Price</h2>
-                <div className="text-3xl font-bold text-blue-600">
-                  {formatCurrency(property.priceProperty)}
-                </div>
+              <div className="bg-muted p-4 rounded-lg mb-6">
+                <h3 className="text-primary mb-2 font-semibold">Price</h3>
+                <div className="text-primary text-2xl font-bold">{formatCurrency(property.priceProperty)}</div>
               </div>
 
-              {/* Property Information Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="bg-slate-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-slate-900 mb-2">Property Details</h3>
-                  <div className="space-y-2 text-slate-700">
+              {/* Property Information */}
+              <div className="space-y-4 mb-6">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">Property Details</h3>
+                  <div className="space-y-2 text-gray-700">
                     <p><span className="font-medium">Name:</span> {property.name}</p>
+                    <p><span className="font-medium">Bedrooms:</span> {property.bedrooms || 'N/A'}</p>
+                    <p><span className="font-medium">Bathrooms:</span> {property.bathrooms || 'N/A'}</p>
+                    <p><span className="font-medium">Square Meters:</span> {property.squareMeters || 'N/A'}</p>
+                    <p><span className="font-medium">Property Type:</span> {property.propertyType || 'N/A'}</p>
                   </div>
                 </div>
 
-                <div className="bg-slate-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-slate-900 mb-2">Owner Information</h3>
-                  <div className="space-y-2 text-slate-700">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">Owner Information</h3>
+                  <div className="space-y-2 text-gray-700">
                     <p><span className="font-medium">Owner ID:</span> {property.idOwner}</p>
-                    {/* TODO: Add actual owner details when available */}
                   </div>
                 </div>
-              </div>
 
-              {/* Address Section */}
-              <div className="bg-slate-50 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-slate-900 mb-2">Full Address</h3>
-                <p className="text-slate-700">{property.addressProperty}</p>
+                {property.description && (
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">Description</h3>
+                    <p className="text-gray-700">{property.description}</p>
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-200">
-                <Button
+              <div className="flex gap-3 pt-4 border-t border-gray-200">
+                <button
                   onClick={handleContactOwner}
-                  variant="primary"
-                  className="flex-1"
+                  className="flex-1 bg-primary text-white py-3 px-4 rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
                 >
-                  <Phone size={16} />
+                  <Phone className="w-4 h-4" />
                   Contact Owner
-                </Button>
+                </button>
 
-                <Button
+                <button
                   onClick={() => {
-                    // TODO: Implement save functionality
-                    alert('Save functionality would be implemented here')
+                    if (property) {
+                      toggleFavorite(property.id)
+                    }
                   }}
-                  variant="secondary"
-                  className="flex-1"
+                  className="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-xl hover:bg-gray-300 transition-colors flex items-center justify-center gap-2"
                 >
-                  <Heart size={16} />
+                  <Heart className="w-4 h-4" />
                   Save Property
-                </Button>
-
-                <Button
-                  onClick={onClose}
-                  variant="ghost"
-                  className="sm:w-auto"
-                >
-                  Close
-                </Button>
+                </button>
               </div>
             </div>
           ) : (

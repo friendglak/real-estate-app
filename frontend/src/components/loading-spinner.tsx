@@ -13,7 +13,7 @@ export function LoadingSpinner({
 }: LoadingSpinnerProps) {
   return (
     <div className={`flex items-center justify-center gap-2 ${className}`}>
-      <Loader2 size={size} className="animate-spin text-blue-600" />
+      <Loader2 size={size} className="animate-spin text-primary" />
       {text && <span className="text-slate-600">{text}</span>}
     </div>
   )

@@ -10,15 +10,15 @@ interface ErrorDisplayProps {
 
 export function ErrorDisplay({ title, message, onRetry }: ErrorDisplayProps) {
   return (
-    <div 
+    <div
       className="bg-red-50 border border-red-200 rounded-lg p-6"
       role="alert"
       aria-live="polite"
     >
       <div className="flex items-start gap-3">
-        <AlertCircle 
-          className="text-red-600 flex-shrink-0 mt-0.5" 
-          size={20} 
+        <AlertCircle
+          className="text-red-600 flex-shrink-0 mt-0.5"
+          size={20}
           aria-hidden="true"
         />
         <div className="flex-1">

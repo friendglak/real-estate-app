@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import { PropertyCard } from '@/components/property-card'
 import { PropertyDetailModal } from '@/components/property-detail-modal'
 import { Pagination } from '@/components/pagination'
+import { usePropertyModal } from '@/hooks/use-property-modal'
 import type { PropertyDto } from '@/types/property'
 
 interface PropertyGridProps {
@@ -19,31 +19,23 @@ export function PropertyGrid({
   currentPage,
   totalCount
 }: PropertyGridProps) {
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { selectedPropertyId, isModalOpen, openModalWithProperty, closeModal } = usePropertyModal()
 
   const handlePropertyClick = (property: PropertyDto) => {
-    setSelectedPropertyId(property.id)
-    setIsModalOpen(true)
-  }
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false)
-    setSelectedPropertyId(null)
+    openModalWithProperty(property)
   }
 
   return (
     <div className="space-y-8">
       {/* Results summary */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="text-sm text-slate-600">
-          Showing {((currentPage - 1) * 12) + 1} to {Math.min(currentPage * 12, totalCount)} of{' '}
-          <span className="font-medium">{totalCount.toLocaleString()}</span> properties
+        <div className="text-gray-600 mb-6">
+          <p>Showing {((currentPage - 1) * 12) + 1} to {Math.min(currentPage * 12, totalCount)} of {totalCount.toLocaleString()} properties</p>
         </div>
       </div>
 
       {/* Properties grid */}
-      <div className="properties-grid">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {properties.map((property) => (
           <PropertyCard
             key={property.id}
@@ -63,7 +55,7 @@ export function PropertyGrid({
       {/* Property detail modal */}
       <PropertyDetailModal
         isOpen={isModalOpen}
-        onClose={handleCloseModal}
+        onClose={closeModal}
         propertyId={selectedPropertyId || undefined}
       />
     </div>

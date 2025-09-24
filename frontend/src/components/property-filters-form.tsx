@@ -2,7 +2,10 @@
 
 import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
-import { Search, Filter, X, ChevronDown } from 'lucide-react'
+import { Search, X } from 'lucide-react'
+import { Input } from './ui/input'
+import { Button } from './ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import type { PropertyFilters } from '@/types/property'
 
 interface PropertyFiltersFormProps {
@@ -16,6 +19,8 @@ interface FilterFormData {
   address: string
   minPrice: string
   maxPrice: string
+  propertyType: string
+  bedrooms: string
 }
 
 export function PropertyFiltersForm({
@@ -31,6 +36,8 @@ export function PropertyFiltersForm({
       address: initialFilters.address || '',
       minPrice: initialFilters.minPrice?.toString() || '',
       maxPrice: initialFilters.maxPrice?.toString() || '',
+      propertyType: initialFilters.propertyType || 'all',
+      bedrooms: initialFilters.bedrooms?.toString() || 'any',
     }
   })
 
@@ -43,6 +50,8 @@ export function PropertyFiltersForm({
       address: data.address || undefined,
       minPrice: data.minPrice ? parseFloat(data.minPrice) : undefined,
       maxPrice: data.maxPrice ? parseFloat(data.maxPrice) : undefined,
+      propertyType: data.propertyType !== 'all' ? data.propertyType : undefined,
+      bedrooms: data.bedrooms !== 'any' ? parseInt(data.bedrooms) : undefined,
     }
 
     onFiltersChange(filters)
@@ -54,98 +63,72 @@ export function PropertyFiltersForm({
       address: '',
       minPrice: '',
       maxPrice: '',
+      propertyType: 'all',
+      bedrooms: 'any',
     })
     onFiltersChange({})
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-          <Filter size={20} />
-          Search Properties
-        </h2>
-
-        <button
-          type="button"
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="lg:hidden btn-outline text-sm"
-        >
-          <span>{isExpanded ? 'Hide' : 'Show'} Filters</span>
-          <ChevronDown
-            size={16}
-            className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-          />
-        </button>
+    <div className="bg-white p-8 rounded-2xl shadow-sm mb-8 border border-border">
+      <div className="flex items-center gap-2 mb-6">
+        <Search className="w-5 h-5 text-primary" />
+        <h2 className="text-primary">Search Properties</h2>
       </div>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className={`space-y-4 ${!isExpanded ? 'hidden' : 'block'} lg:block`}
+        className="space-y-6"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           {/* Name Filter */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Property Name
-            </label>
+            <label className="block text-sm text-muted-foreground mb-2">Property Name</label>
             <Controller
               name="name"
               control={control}
               render={({ field }) => (
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
-                  <input
-                    {...field}
-                    type="text"
-                    placeholder="Search by name..."
-                    className="input-field pl-9"
-                    disabled={isLoading}
-                  />
-                </div>
+                <Input
+                  {...field}
+                  placeholder="Enter property name"
+                  className="bg-input-background border-border rounded-xl"
+                  disabled={isLoading}
+                />
               )}
             />
           </div>
 
           {/* Address Filter */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Address
-            </label>
+            <label className="block text-sm text-muted-foreground mb-2">Address</label>
             <Controller
               name="address"
               control={control}
               render={({ field }) => (
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
-                  <input
-                    {...field}
-                    type="text"
-                    placeholder="Search by address..."
-                    className="input-field pl-9"
-                    disabled={isLoading}
-                  />
-                </div>
+                <Input
+                  {...field}
+                  placeholder="Enter address"
+                  className="bg-input-background border-border rounded-xl"
+                  disabled={isLoading}
+                />
               )}
             />
           </div>
 
           {/* Min Price Filter */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Min Price
-            </label>
+            <label className="block text-sm text-muted-foreground mb-2">Min Price</label>
             <Controller
               name="minPrice"
               control={control}
               render={({ field }) => (
-                <input
+                <Input
                   {...field}
                   type="number"
                   min="0"
                   step="1000"
-                  placeholder="0"
-                  className="input-field"
+                  placeholder="£175,000"
+                  className="bg-input-background border-border rounded-xl"
                   disabled={isLoading}
                 />
               )}
@@ -154,20 +137,18 @@ export function PropertyFiltersForm({
 
           {/* Max Price Filter */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Max Price
-            </label>
+            <label className="block text-sm text-muted-foreground mb-2">Max Price</label>
             <Controller
               name="maxPrice"
               control={control}
               render={({ field }) => (
-                <input
+                <Input
                   {...field}
                   type="number"
                   min="0"
                   step="1000"
-                  placeholder="No limit"
-                  className="input-field"
+                  placeholder="more than £300,000"
+                  className="bg-input-background border-border rounded-xl"
                   disabled={isLoading}
                 />
               )}
@@ -175,27 +156,74 @@ export function PropertyFiltersForm({
           </div>
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* House Type Filter */}
+          <div>
+            <label className="block text-sm text-muted-foreground mb-2">House Type</label>
+            <Controller
+              name="propertyType"
+              control={control}
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className="bg-input-background border-border rounded-xl">
+                    <SelectValue placeholder="All Of Them" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Of Them</SelectItem>
+                    <SelectItem value="apartment">Apartment</SelectItem>
+                    <SelectItem value="house">House</SelectItem>
+                    <SelectItem value="condo">Condo</SelectItem>
+                    <SelectItem value="villa">Villa</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+
+          {/* Rooms Filter */}
+          <div>
+            <label className="block text-sm text-muted-foreground mb-2">Rooms</label>
+            <Controller
+              name="bedrooms"
+              control={control}
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className="bg-input-background border-border rounded-xl">
+                    <SelectValue placeholder="3 And Less" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="any">Any</SelectItem>
+                    <SelectItem value="1">1+</SelectItem>
+                    <SelectItem value="2">2+</SelectItem>
+                    <SelectItem value="3">3+</SelectItem>
+                    <SelectItem value="4">4+</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+        </div>
+
         <div className="flex flex-col sm:flex-row gap-2 justify-end pt-2">
           {hasActiveFilters && (
-            <button
-              type="button"
+            <Button
+              type="submit"
               onClick={clearFilters}
               disabled={isLoading}
-              className="btn-outline"
+              className="bg-accent hover:bg-accent/90 text-accent-foreground px-8 rounded-xl"
             >
               <X size={16} />
               Clear Filters
-            </button>
+            </Button>
           )}
 
-          <button
+          <Button
             type="submit"
             disabled={isLoading}
-            className="btn-primary"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 rounded-xl"
           >
-            <Search size={16} />
             {isLoading ? 'Searching...' : 'Search Properties'}
-          </button>
+          </Button>
         </div>
       </form>
     </div>
