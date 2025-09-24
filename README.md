@@ -124,6 +124,9 @@ cd frontend
 # Install dependencies
 npm install
 
+# Create .env.local file with API URL (optional)
+echo "NEXT_PUBLIC_API_URL=http://localhost:5000" > .env.local
+
 # Start development server
 npm run dev
 ```
@@ -196,5 +199,6 @@ MONGODB_CONNECTION_STRING=mongodb://localhost:27017/realestate
 
 **Frontend**
 
-- API base URL is configured in `src/services/api-service.ts`
-- Default: `http://localhost:5000/`
+- API base URL is configured via `NEXT_PUBLIC_API_URL` environment variable
+- Default: `http://localhost:5000`
+- Can be set in `.env.local` file in the frontend directory
