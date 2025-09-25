@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { Search, X } from 'lucide-react'
 import { Input } from './ui/input'
